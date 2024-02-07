@@ -10,13 +10,11 @@ namespace ir1_khomenko
     {
         private readonly Dictionary<string, HashSet<int>> invertedIndex;
         private readonly bool[,] incidenceMatrix;
-        private readonly List<string> termsList;
 
         public SearchEngine(Dictionary<string, HashSet<int>> invertedIndex, bool[,] incidenceMatrix)
         {
             this.invertedIndex = invertedIndex;
             this.incidenceMatrix = incidenceMatrix;
-            this.termsList = new List<string>();
         }
 
         public HashSet<int> BooleanSearch(string query)
@@ -57,11 +55,6 @@ namespace ir1_khomenko
                 terms.Add(term);
             }
 
-            foreach (string term in terms)
-            {
-                Console.WriteLine(term);
-            }
-
             return terms;
         }
 
@@ -85,42 +78,46 @@ namespace ir1_khomenko
 
         private HashSet<int> EvaluateIncidenceMatrix(List<string> terms)
         {
-            HashSet<int> results = new();
+            HashSet<int> results = new HashSet<int>();
 
-            for(int i = 0; i < incidenceMatrix.GetLength(0); i++)
+            for (int i = 0; i < incidenceMatrix.GetLength(0); i++)
             {
                 results.Add(i);
             }
 
-            HashSet<int> tempResults = new();
+            HashSet<int> tempResults = new HashSet<int>();
 
-
-            foreach (string term in terms)
+            for (int termIndex = 0; termIndex < terms.Count; termIndex++)
             {
-                HashSet<int> newResults = new();
+                string term = terms[termIndex];
+
                 if (term == "AND" || term == "OR" || term == "NOT")
                 {
                     continue;
                 }
 
-                int termIndex = termsList.IndexOf(term);
-
-                if(termIndex != -1)
+                HashSet<int> newResults = new HashSet<int>();
+                for (int docId = 0; docId < incidenceMatrix.GetLength(0); docId++)
                 {
-                    for(int i = 0; i < incidenceMatrix.GetLength(0); i++)
+                    if (incidenceMatrix[docId, termIndex])
                     {
-                        if (incidenceMatrix[i, termIndex])
-                        {
-                            newResults.Add(i);
-                        }
+                        newResults.Add(docId);
                     }
                 }
+
                 if (termIndex > 0)
                 {
                     string previousTerm = terms[termIndex - 1];
                     if (previousTerm == "AND")
                     {
-                        tempResults.IntersectWith(newResults);
+                        if (tempResults.Count == 0)
+                        {
+                            tempResults.UnionWith(newResults);
+                        }
+                        else
+                        {
+                            tempResults.IntersectWith(newResults);
+                        }
                     }
                     else if (previousTerm == "OR")
                     {
@@ -131,9 +128,13 @@ namespace ir1_khomenko
                         tempResults.ExceptWith(newResults);
                     }
                 }
+                else
+                {
+                    tempResults = newResults;
+                }
             }
 
-            results = tempResults;
+            results.IntersectWith(tempResults);
 
             return results;
         }

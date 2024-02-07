@@ -33,37 +33,11 @@ dictionaryProcessor.SaveDictionaryTXT(wordCount, dictionaryFilePathTxt);
 stopwatch.Stop();
 TimeSpan txtParsingTime = stopwatch.Elapsed;
 
-// Calculating dictionary data
-long dictionarySize = dictionaryProcessor.CalculateDictionarySize(wordCount);
-int totalWordCount = dictionaryProcessor.CalculateTotalWordCount(wordCount);
-int fileNum = dictionaryProcessor.CalculateFileNum(files);
-long spaceUsage = dictionaryProcessor.CalculateSpaceUsage(files);
-
-// File size for Json
-FileInfo jsonFileInfo = new FileInfo(dictionaryFilePathJson);
-long jsonFileSize = (jsonFileInfo.Length / 1024);
-
-// File size for txt
-FileInfo txtFileInfo = new FileInfo(dictionaryFilePathTxt);
-long txtFileSize = (txtFileInfo.Length / 1024);
-
-// Output
-Console.WriteLine("---------------------------------------------");
-Console.WriteLine($"Dictionary Size: {dictionarySize} KB ({dictionarySize / 1024} MB)");
-Console.WriteLine($"Total Word Count: {totalWordCount}");
-Console.WriteLine($"Number of Files: {fileNum}");
-Console.WriteLine($"Space Usage: {spaceUsage} KB ({spaceUsage / 1024} MB)");
-
-Console.WriteLine("---------------------------------------------");
-Console.WriteLine($"Size of JSON file: {jsonFileSize} KB ({jsonFileSize / 1024} MB)");
-Console.WriteLine($"Time to serialize and save to JSON: {jsonParsingTime}");
-Console.WriteLine($"Size of TXT file: {txtFileSize} Kb ({txtFileSize / 1024} MB)");
-Console.WriteLine($"Time to save to TXT: {txtParsingTime}");
 
 Console.WriteLine("---------------------------------------------");
 SearchEngine search = new(dictionary.InvertedIndex, null);
 
-string query = "diagram AND corrugated";
+string query = "diagram AND corrugated OR crosstalk";
 stopwatch.Reset();
 stopwatch.Start();
 HashSet<int> searchResults = search.BooleanSearch(query);
@@ -77,9 +51,9 @@ foreach (int result in searchResults)
 Console.WriteLine($"Search time: {stopwatch.ElapsedMilliseconds}ms");
 
 //Console.WriteLine("---------------------------------------------");
-//search = new(null, dictionary.IncidenceMatrix);
+//SearchEngine search = new(null, dictionary.IncidenceMatrix);
 
-//string query = "diagram AND corrugated";
+//string query = "diagram AND corrugated NOT crosstalk";
 //stopwatch.Reset();
 //stopwatch.Start();
 //HashSet<int> searchResults = search.BooleanSearch(query);
