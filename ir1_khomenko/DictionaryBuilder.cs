@@ -44,32 +44,43 @@ namespace ir1_khomenko
 			}
 
 			// Test output
-			foreach (var term in invertedIndex)
-			{
-				Console.Write($"{term.Key}: ");
-				foreach (var docID in term.Value)
-				{
-					Console.Write($"{docID} ");
-				}
-				Console.WriteLine();
-			}
-
-			//bool[,] incidencematrix = new bool[alltext.count, termslist.count];
-
-			//for (int i = 0; i < alltext.count; i++)
+			//foreach (var term in invertedIndex)
 			//{
-			//	string text = alltext[i];
-			//	string[] words = text.split(new char[] { ' ', '\n', '\r', '\t', '.', ',', ';', ':', '—', '-', '(', ')', '[', ']', '{', '}', '<', '>', '\"', '\'', '\\', '/', '!', '?', '|', '_', '+', '=', '*', '&', '%', '$', '#', '@', '^', '~', '`', '“', '"', '”' }, stringsplitoptions.removeemptyentries);
-
-			//	foreach (string word in words)
+			//	Console.Write($"{term.Key}: ");
+			//	foreach (var docID in term.Value)
 			//	{
-			//		string cleanword = word.tolower();
-			//		int termindex = termslist.indexof(cleanword);
-			//		incidencematrix[i, termindex] = true;
+			//		Console.Write($"{docID} ");
 			//	}
+			//	Console.WriteLine();
 			//}
 
-			return wordCount;
+			bool[,] incidenceMatrix = new bool[allText.Count, termsList.Count];
+
+			for (int i = 0; i < allText.Count; i++)
+			{
+				string text = allText[i];
+				string[] words = text.Split(new char[] { ' ', '\n', '\r', '\t', '.', ',', ';', ':', '—', '-', '(', ')', '[', ']', '{', '}', '<', '>', '\"', '\'', '\\', '/', '!', '?', '|', '_', '+', '=', '*', '&', '%', '$', '#', '@', '^', '~', '`', '“', '"', '”' }, StringSplitOptions.RemoveEmptyEntries);
+
+				foreach (string word in words)
+				{
+					string cleanWord = word.ToLower();
+					int termIndex = termsList.IndexOf(cleanWord);
+					incidenceMatrix[i, termIndex] = true;
+				}
+			}
+
+            // Test output
+    //        for (int i = 0; i < allText.Count; i++)
+    //        {
+				//Console.WriteLine($"Document {i}:");
+    //            for (int j = 0; j < termsList.Count; j++)
+    //            {
+    //                Console.Write($"{termsList[j]}: {(incidenceMatrix[i, j] ? "1" : "0")} ");
+    //            }
+    //            Console.WriteLine();
+    //        }
+
+            return wordCount;
 		}
 	}
 }
