@@ -60,6 +60,38 @@ Console.WriteLine($"Time to serialize and save to JSON: {jsonParsingTime}");
 Console.WriteLine($"Size of TXT file: {txtFileSize} Kb ({txtFileSize / 1024} MB)");
 Console.WriteLine($"Time to save to TXT: {txtParsingTime}");
 
+Console.WriteLine("---------------------------------------------");
+SearchEngine search = new(dictionary.InvertedIndex, null);
+
+string query = "diagram AND corrugated";
+stopwatch.Reset();
+stopwatch.Start();
+HashSet<int> searchResults = search.BooleanSearch(query);
+stopwatch.Stop();
+
+Console.WriteLine($"Search results for {query}: ");
+foreach (int result in searchResults)
+{
+    Console.WriteLine($"Document ID: {result}");
+}
+Console.WriteLine($"Search time: {stopwatch.ElapsedMilliseconds}ms");
+
+//Console.WriteLine("---------------------------------------------");
+//search = new(null, dictionary.IncidenceMatrix);
+
+//string query = "diagram AND corrugated";
+//stopwatch.Reset();
+//stopwatch.Start();
+//HashSet<int> searchResults = search.BooleanSearch(query);
+//stopwatch.Stop();
+
+//Console.WriteLine($"Search results for {query}: ");
+//foreach (int result in searchResults)
+//{
+//    Console.WriteLine($"Document ID: {result}");
+//}
+//Console.WriteLine($"Search time: {stopwatch.ElapsedMilliseconds}ms");
+
 //Console.WriteLine("---------------------------------------------");
 //Dictionary<string, int> txtDictionary = dictionaryProcessor.ReadDictionaryTXT(dictionaryFilePathTxt);
 //foreach (var pair in txtDictionary)
