@@ -109,14 +109,7 @@ namespace ir1_khomenko
 
                     if(logicalOperator == "AND")
                     {
-                        if(tempResults.Count == 0)
-                        {
-                            tempResults.UnionWith(newResults);
-                        }
-                        else
-                        {
-                            tempResults.IntersectWith(newResults);
-                        }
+                        tempResults.IntersectWith(newResults);
                     }
                     else if(logicalOperator == "OR")
                     {
@@ -140,12 +133,13 @@ namespace ir1_khomenko
 
             HashSet<int> tempResults = new();
 
-            string previousOperator = "OR";
+            string logicalOperator = "OR";
 
             foreach(string term in terms)
             {
                 if (term == "AND" || term == "OR" || term == "NOT")
                 {
+                    logicalOperator = term;
                     continue;
                 }
 
@@ -157,21 +151,19 @@ namespace ir1_khomenko
                 }
                 else
                 {
-                    if (previousOperator == "AND")
+                    if (logicalOperator == "AND")
                     {
-                        results.IntersectWith(newResults);
+                        tempResults.IntersectWith(newResults);
                     }
-                    else if (previousOperator == "OR")
+                    else if (logicalOperator == "OR")
                     {
-                        results.UnionWith(newResults);
+                        tempResults.UnionWith(newResults);
                     }
-                    else if (previousOperator == "NOT")
+                    else if (logicalOperator == "NOT")
                     {
-                        results.ExceptWith(newResults);
+                        tempResults.ExceptWith(newResults);
                     }
                 }
-
-                previousOperator = term;
             }
 
             results.IntersectWith(tempResults);

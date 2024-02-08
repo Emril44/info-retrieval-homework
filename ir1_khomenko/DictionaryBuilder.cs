@@ -20,6 +20,8 @@ namespace ir1_khomenko
 
             foreach (string text in allText)
             {
+                //Console.WriteLine($"Processing text: {text}");
+
                 string[] words = text.Split(new char[] { ' ', '\n', '\r', '\t', '.', ',', ';', ':', '—', '-', '(', ')', '[', ']', '{', '}', '<', '>', '\"', '\'', '\\', '/', '!', '?', '|', '_', '+', '=', '*', '&', '%', '$', '#', '@', '^', '~', '`', '“', '"', '”' }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (string word in words)
@@ -37,16 +39,11 @@ namespace ir1_khomenko
                         wordCount[cleanWord]++;
                     }
 
-                    InvertedIndex[cleanWord].Add(allText.IndexOf(text));
+                    int documentId = allText.IndexOf(text);
+                    //Console.WriteLine($"Associating word '{cleanWord}' with document ID: {documentId}");
+                    InvertedIndex[cleanWord].Add(documentId);
                 }
             }
-
-            // Debug statement to print termsList
-            //Console.WriteLine("Terms List:");
-            //foreach (var term in termsList)
-            //{
-            //    Console.WriteLine(term);
-            //}
 
             termIndexMap = new();
 
@@ -54,12 +51,6 @@ namespace ir1_khomenko
             {
                 termIndexMap[termsList[index]] = index;
             }
-
-            //Console.WriteLine("Term Index Map:");
-            //foreach (var kvp in termIndexMap)
-            //{
-            //    Console.WriteLine($"Term: {kvp.Key}, Index: {kvp.Value}");
-            //}
 
             IncidenceMatrix = new bool[allText.Count, termsList.Count];
 

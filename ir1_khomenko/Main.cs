@@ -36,7 +36,7 @@ TimeSpan txtParsingTime = stopwatch.Elapsed;
 
 Console.WriteLine("---------------------------------------------");
 // Query for both searches
-string query = "diagram AND corrugated OR philadelphia";
+string query = "diagram OR corrugated NOT philadelphia";
 
 Console.WriteLine("INVERTED INDEX");
 SearchEngine indexSearch = new(dictionary.InvertedIndex, null, null);
