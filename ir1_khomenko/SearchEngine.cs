@@ -10,11 +10,13 @@ namespace ir1_khomenko
     {
         private readonly Dictionary<string, HashSet<int>> invertedIndex;
         private readonly bool[,] incidenceMatrix;
+        private Dictionary<string, int> termIndexMap;
 
-        public SearchEngine(Dictionary<string, HashSet<int>> invertedIndex, bool[,] incidenceMatrix)
+        public SearchEngine(Dictionary<string, HashSet<int>> invertedIndex, bool[,] incidenceMatrix, Dictionary<string, int> termIndexMap)
         {
             this.invertedIndex = invertedIndex;
             this.incidenceMatrix = incidenceMatrix;
+            this.termIndexMap = termIndexMap;
         }
 
         public HashSet<int> BooleanSearch(string query)
@@ -70,16 +72,15 @@ namespace ir1_khomenko
             }
             else
             {
-                results = EvaluateIncidenceMatrix(terms);
+                results = EvaluateIncidenceMatrix(terms, termIndexMap);
             }
 
             return results;
         }
 
-        private HashSet<int> EvaluateIncidenceMatrix(List<string> terms)
+        private HashSet<int> EvaluateIncidenceMatrix(List<string> terms, Dictionary<string, int> termIndexMap)
         {
             HashSet<int> results = new HashSet<int>();
-
             for (int i = 0; i < incidenceMatrix.GetLength(0); i++)
             {
                 results.Add(i);
@@ -87,30 +88,28 @@ namespace ir1_khomenko
 
             HashSet<int> tempResults = new HashSet<int>();
 
-            for (int termIndex = 0; termIndex < terms.Count; termIndex++)
+            string logicalOperator = "OR"; // default
+            foreach(string term in terms)
             {
-                string term = terms[termIndex];
-
-                if (term == "AND" || term == "OR" || term == "NOT")
+                if(term == "AND" || term == "OR" || term == "NOT")
                 {
-                    continue;
+                    logicalOperator = term;
                 }
-
-                HashSet<int> newResults = new HashSet<int>();
-                for (int docId = 0; docId < incidenceMatrix.GetLength(0); docId++)
+                else
                 {
-                    if (incidenceMatrix[docId, termIndex])
+                    HashSet<int> newResults = new();
+
+                    for(int docID = 0; docID < incidenceMatrix.GetLength(0); docID++)
                     {
-                        newResults.Add(docId);
+                        if (incidenceMatrix[docID, termIndexMap[term]])
+                        {
+                            newResults.Add(docID);
+                        }
                     }
-                }
 
-                if (termIndex > 0)
-                {
-                    string previousTerm = terms[termIndex - 1];
-                    if (previousTerm == "AND")
+                    if(logicalOperator == "AND")
                     {
-                        if (tempResults.Count == 0)
+                        if(tempResults.Count == 0)
                         {
                             tempResults.UnionWith(newResults);
                         }
@@ -119,18 +118,14 @@ namespace ir1_khomenko
                             tempResults.IntersectWith(newResults);
                         }
                     }
-                    else if (previousTerm == "OR")
+                    else if(logicalOperator == "OR")
                     {
                         tempResults.UnionWith(newResults);
                     }
-                    else if (previousTerm == "NOT")
+                    else if(logicalOperator == "NOT")
                     {
                         tempResults.ExceptWith(newResults);
                     }
-                }
-                else
-                {
-                    tempResults = newResults;
                 }
             }
 
@@ -145,19 +140,16 @@ namespace ir1_khomenko
 
             HashSet<int> tempResults = new();
 
+            string previousOperator = "OR";
+
             foreach(string term in terms)
             {
-                HashSet<int> newResults = new();
-
                 if (term == "AND" || term == "OR" || term == "NOT")
                 {
                     continue;
                 }
 
-                if (invertedIndex.ContainsKey(term))
-                {
-                    newResults = invertedIndex[term];
-                }
+                HashSet<int> newResults = invertedIndex.ContainsKey(term) ? invertedIndex[term] : new HashSet<int>();
 
                 if (tempResults.Count == 0)
                 {
@@ -165,19 +157,21 @@ namespace ir1_khomenko
                 }
                 else
                 {
-                    if (terms[terms.IndexOf(term) - 1] == "AND")
+                    if (previousOperator == "AND")
                     {
                         results.IntersectWith(newResults);
                     }
-                    else if (terms[terms.IndexOf(term) - 1] == "OR")
+                    else if (previousOperator == "OR")
                     {
                         results.UnionWith(newResults);
                     }
-                    else if (terms[terms.IndexOf(term) - 1] == "NOT")
+                    else if (previousOperator == "NOT")
                     {
                         results.ExceptWith(newResults);
                     }
                 }
+
+                previousOperator = term;
             }
 
             results.IntersectWith(tempResults);

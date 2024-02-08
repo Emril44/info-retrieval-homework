@@ -10,6 +10,7 @@ namespace ir1_khomenko
 	{
         public Dictionary<string, HashSet<int>> InvertedIndex {  get; private set; }
         public bool[,] IncidenceMatrix { get; private set; }
+        private Dictionary<string, int> termIndexMap;
 
 		public Dictionary<string, int> BuildDictionary(List<string> allText)
 		{
@@ -39,7 +40,27 @@ namespace ir1_khomenko
                     InvertedIndex[cleanWord].Add(allText.IndexOf(text));
                 }
             }
-            
+
+            // Debug statement to print termsList
+            //Console.WriteLine("Terms List:");
+            //foreach (var term in termsList)
+            //{
+            //    Console.WriteLine(term);
+            //}
+
+            termIndexMap = new();
+
+            for(int index = 0; index < termsList.Count; index++)
+            {
+                termIndexMap[termsList[index]] = index;
+            }
+
+            //Console.WriteLine("Term Index Map:");
+            //foreach (var kvp in termIndexMap)
+            //{
+            //    Console.WriteLine($"Term: {kvp.Key}, Index: {kvp.Value}");
+            //}
+
             IncidenceMatrix = new bool[allText.Count, termsList.Count];
 
             for (int i = 0; i < allText.Count; i++)
@@ -50,34 +71,19 @@ namespace ir1_khomenko
                 foreach (string word in words)
                 {
                     string cleanWord = word.ToLower();
-                    int termIndex = termsList.IndexOf(cleanWord);
-                    IncidenceMatrix[i, termIndex] = true;
+                    if(termIndexMap.TryGetValue(cleanWord, out int termIndex))
+                    {
+                        IncidenceMatrix[i, termIndex] = true;
+                    }
                 }
             }
 
-            // Test output (inverted index)
-            //foreach (var term in invertedIndex)
-            //{
-            //	Console.Write($"{term.Key}: ");
-            //	foreach (var docID in term.Value)
-            //	{
-            //		Console.Write($"{docID} ");
-            //	}
-            //	Console.WriteLine();
-            //}
-
-            // Test output (incidence matrix)
-            //for (int i = 0; i < allText.Count; i++)
-            //{
-            //	Console.WriteLine($"Document {i}:");
-            //	for (int j = 0; j < termsList.Count; j++)
-            //	{
-            //		Console.Write($"{termsList[j]}: {(incidenceMatrix[i, j] ? "1" : "0")} ");
-            //	}
-            //	Console.WriteLine();
-            //}
-
             return wordCount;
 		}
+
+        public Dictionary<string, int> GetTermIndexMap()
+        {
+            return termIndexMap;
+        }
 	}
 }
