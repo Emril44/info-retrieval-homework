@@ -20,8 +20,6 @@ namespace ir1_khomenko
 
             foreach (string text in allText)
             {
-                //Console.WriteLine($"Processing text: {text}");
-
                 string[] words = text.Split(new char[] { ' ', '\n', '\r', '\t', '.', ',', ';', ':', '—', '-', '(', ')', '[', ']', '{', '}', '<', '>', '\"', '\'', '\\', '/', '!', '?', '|', '_', '+', '=', '*', '&', '%', '$', '#', '@', '^', '~', '`', '“', '"', '”' }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (string word in words)
@@ -40,7 +38,6 @@ namespace ir1_khomenko
                     }
 
                     int documentId = allText.IndexOf(text);
-                    //Console.WriteLine($"Associating word '{cleanWord}' with document ID: {documentId}");
                     InvertedIndex[cleanWord].Add(documentId);
                 }
             }

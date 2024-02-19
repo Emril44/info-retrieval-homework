@@ -20,18 +20,8 @@ DictionaryProcessor dictionaryProcessor = new DictionaryProcessor();
 // Timing how quick Json saves
 Stopwatch stopwatch = new();
 
-stopwatch.Start();
 dictionaryProcessor.SaveDictionaryJSON(wordCount, dictionaryFilePathJson);
-stopwatch.Stop();
-TimeSpan jsonParsingTime = stopwatch.Elapsed;
-
-// Timing how quick txt saves
-stopwatch.Reset();
-
-stopwatch.Start();
 dictionaryProcessor.SaveDictionaryTXT(wordCount, dictionaryFilePathTxt);
-stopwatch.Stop();
-TimeSpan txtParsingTime = stopwatch.Elapsed;
 
 
 Console.WriteLine("---------------------------------------------");
