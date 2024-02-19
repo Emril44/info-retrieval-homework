@@ -23,39 +23,30 @@ Stopwatch stopwatch = new();
 dictionaryProcessor.SaveDictionaryJSON(wordCount, dictionaryFilePathJson);
 dictionaryProcessor.SaveDictionaryTXT(wordCount, dictionaryFilePathTxt);
 
+SearchEngine searchEngine = new(
+    dictionary.InvertedIndex,
+    null,
+    dictionary.PhrasalIndex,
+    dictionary.CoordinateInvertedIndex,
+    null
+    );
 
-Console.WriteLine("---------------------------------------------");
-// Query for both searches
-string query = "diagram OR corrugated NOT philadelphia";
+Console.WriteLine("BOOLEAN SEARCH:");
+HashSet<int> boolResults = searchEngine.BooleanSearch("diagram AND corrugated OR philadelphia");
+PrintResults(boolResults);
+Console.WriteLine("--------------------------------\n");
 
-Console.WriteLine("INVERTED INDEX");
-SearchEngine indexSearch = new(dictionary.InvertedIndex, null, null);
+Console.WriteLine("PHRASAL SEARCH:");
+HashSet<int> phrasalResults = searchEngine.PhraseSearch("overlook hotel");
+PrintResults(phrasalResults);
+Console.WriteLine("--------------------------------\n");
 
-stopwatch.Reset();
-stopwatch.Start();
-HashSet<int> indexSearchResults = indexSearch.BooleanSearch(query);
-stopwatch.Stop();
+Console.WriteLine("DISTANCE-BASED SEARCH:");
+HashSet<int> distanceResults = searchEngine.DistanceBasedSearch("Derry", "sewer", 5);
+PrintResults(distanceResults);
+Console.WriteLine("--------------------------------\n");
 
-Console.WriteLine($"Search results for {query}: ");
-foreach (int result in indexSearchResults)
+static void PrintResults(HashSet<int> results)
 {
-    Console.WriteLine($"Document ID: {result}");
+    foreach(int result in results) Console.WriteLine($"Document ID: {result}");
 }
-Console.WriteLine($"Search time: {stopwatch.ElapsedMilliseconds}ms");
-
-Console.WriteLine("---------------------------------------------");
-Console.WriteLine("INCIDENCE MATRIX");
-Dictionary<string, int> termIndexMap = dictionary.GetTermIndexMap();
-SearchEngine matrixSearch = new(null, dictionary.IncidenceMatrix, termIndexMap);
-
-stopwatch.Reset();
-stopwatch.Start();
-HashSet<int> searchResults = matrixSearch.BooleanSearch(query);
-stopwatch.Stop();
-
-Console.WriteLine($"Search results for {query}: ");
-foreach (int result in searchResults)
-{
-    Console.WriteLine($"Document ID: {result}");
-}
-Console.WriteLine($"Search time: {stopwatch.ElapsedMilliseconds}ms");

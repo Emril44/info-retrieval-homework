@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace ir1_khomenko
 {
-	class DictionaryBuilder
-	{
-        public Dictionary<string, HashSet<int>> InvertedIndex {  get; private set; }
+    class DictionaryBuilder
+    {
+        public Dictionary<string, HashSet<int>> InvertedIndex { get; private set; }
+        public Dictionary<string, List<Tuple<int, int>>> PhrasalIndex { get; private set; }
+        public Dictionary<string, Dictionary<int, List<int>>> CoordinateInvertedIndex { get; private set; }
         public bool[,] IncidenceMatrix { get; private set; }
         private Dictionary<string, int> termIndexMap;
 
@@ -17,29 +19,41 @@ namespace ir1_khomenko
 		{
             Dictionary<string, int> wordCount = new Dictionary<string, int>();
             InvertedIndex = new Dictionary<string, HashSet<int>>();
+            PhrasalIndex = new Dictionary<string, List<Tuple<int, int>>>();
+            CoordinateInvertedIndex = new Dictionary<string, Dictionary<int, List<int>>>();
             List<string> termsList = new List<string>();
 
             foreach (string text in allText)
             {
                 string[] words = text.Split(new char[] { ' ', '\n', '\r', '\t', '.', ',', ';', ':', '—', '-', '(', ')', '[', ']', '{', '}', '<', '>', '\"', '\'', '\\', '/', '!', '?', '|', '_', '+', '=', '*', '&', '%', '$', '#', '@', '^', '~', '`', '“', '"', '”' }, StringSplitOptions.RemoveEmptyEntries);
 
-                foreach (string word in words)
+                for(int i = 0; i < words.Length - 1; i++)
                 {
-                    string cleanWord = word.ToLower();
+                    string wordPair = $"{words[i].ToLower()} {words[i + 1].ToLower()}";
 
-                    if (!wordCount.ContainsKey(cleanWord))
+                    if (!wordCount.ContainsKey(wordPair))
                     {
-                        wordCount[cleanWord] = 1;
-                        termsList.Add(cleanWord);
-                        InvertedIndex[cleanWord] = new HashSet<int>();
+                        wordCount[wordPair] = 1;
+                        termsList.Add(wordPair);
+                        PhrasalIndex[wordPair] = new List<Tuple<int, int>>();
+                        CoordinateInvertedIndex[wordPair] = new Dictionary<int, List<int>>();
+                        InvertedIndex[wordPair] = new HashSet<int>();
                     }
                     else
                     {
-                        wordCount[cleanWord]++;
+                        wordCount[wordPair]++;
                     }
 
                     int documentId = allText.IndexOf(text);
-                    InvertedIndex[cleanWord].Add(documentId);
+                    PhrasalIndex[wordPair].Add(new Tuple<int, int>(documentId, i));
+
+                    if (!CoordinateInvertedIndex[wordPair].ContainsKey(documentId))
+                    {
+                        CoordinateInvertedIndex[wordPair][documentId] = new List<int>();
+                    }
+                    CoordinateInvertedIndex[wordPair][documentId].Add(i);
+
+                    InvertedIndex[wordPair].Add(documentId);
                 }
             }
 

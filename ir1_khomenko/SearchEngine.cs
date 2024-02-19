@@ -9,13 +9,22 @@ namespace ir1_khomenko
     public class SearchEngine
     {
         private readonly Dictionary<string, HashSet<int>> invertedIndex;
+        private readonly Dictionary<string, List<Tuple<int, int>>> phrasalIndex;
+        private readonly Dictionary<string, Dictionary<int, List<int>>> coordinateInvertedIndex;
         private readonly bool[,] incidenceMatrix;
         private Dictionary<string, int> termIndexMap;
 
-        public SearchEngine(Dictionary<string, HashSet<int>> invertedIndex, bool[,] incidenceMatrix, Dictionary<string, int> termIndexMap)
+        public SearchEngine(
+            Dictionary<string,HashSet<int>> invertedIndex,
+            bool[,] incidenceMatrix,
+            Dictionary<string, List<Tuple<int, int>>> phrasalIndex,
+            Dictionary<string, Dictionary<int, List<int>>> coordinateInvertedIndex,
+            Dictionary<string, int> termIndexMap)
         {
             this.invertedIndex = invertedIndex;
             this.incidenceMatrix = incidenceMatrix;
+            this.phrasalIndex = phrasalIndex;
+            this.coordinateInvertedIndex = coordinateInvertedIndex;
             this.termIndexMap = termIndexMap;
         }
 
@@ -32,6 +41,59 @@ namespace ir1_khomenko
             else
             {
                 throw new InvalidOperationException();
+            }
+        }
+
+        public HashSet<int> PhraseSearch(string query)
+        {
+            HashSet<int> results = new();
+
+            List<string> terms = ParseQuery(query);
+
+            foreach (var termPair in GetPhrasePairs(terms))
+            {
+                if(phrasalIndex.ContainsKey(termPair))
+                {
+                    foreach (var tuple in phrasalIndex[termPair])
+                    {
+                        results.Add(tuple.Item1);
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        public HashSet<int> DistanceBasedSearch(string word1, string word2, int distance)
+        {
+            HashSet<int> results = new();
+
+            string termPair = $"{word1.ToLower()} {word2.ToLower()}";
+
+            if(coordinateInvertedIndex.ContainsKey(termPair))
+            {
+                foreach (var docEntry in coordinateInvertedIndex[termPair])
+                {
+                    List<int> positions = docEntry.Value;
+                    for(int i = 0; i < positions.Count - 1; i++)
+                    {
+                        if (positions[i + 1] - positions[i] <= distance)
+                        {
+                            results.Add(docEntry.Key);
+                            break;
+                        }
+                    }
+                }    
+            }
+
+            return results;
+        }
+
+        private IEnumerable<string> GetPhrasePairs(List<string> terms)
+        {
+            for (int i = 0; i < terms.Count; i++)
+            {
+                yield return $"{terms[i].ToLower()} {terms[i + 1].ToLower()}";
             }
         }
 
