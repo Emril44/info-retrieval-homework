@@ -12,6 +12,7 @@ namespace ir1_khomenko
         public bool[,] IncidenceMatrix { get; private set; }
         private Dictionary<string, int> termIndexMap;
 
+        // TODO: Phrasal index & coordinate inverted index
 		public Dictionary<string, int> BuildDictionary(List<string> allText)
 		{
             Dictionary<string, int> wordCount = new Dictionary<string, int>();
