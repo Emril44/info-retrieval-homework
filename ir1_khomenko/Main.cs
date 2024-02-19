@@ -42,7 +42,7 @@ PrintResults(phrasalResults);
 Console.WriteLine("--------------------------------\n");
 
 Console.WriteLine("DISTANCE-BASED SEARCH:");
-HashSet<int> distanceResults = searchEngine.DistanceBasedSearch("Derry", "sewer", 5);
+HashSet<int> distanceResults = searchEngine.DistanceBasedSearch("quarry", "course", 7);
 PrintResults(distanceResults);
 Console.WriteLine("--------------------------------\n");
 

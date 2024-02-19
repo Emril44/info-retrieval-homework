@@ -50,18 +50,28 @@ namespace ir1_khomenko
 
             List<string> terms = ParseQuery(query);
 
-            foreach (var termPair in GetPhrasePairs(terms))
+            foreach (var phrasePair in GetPhrasePairs(terms))
             {
-                if(phrasalIndex.ContainsKey(termPair))
+                if(phrasalIndex.ContainsKey(phrasePair))
                 {
-                    foreach (var tuple in phrasalIndex[termPair])
+                    foreach (var tuple in phrasalIndex[phrasePair])
                     {
-                        results.Add(tuple.Item1);
+                        int documentId = tuple.Item1;
+
+                        if(CheckDistance(phrasePair, documentId))
+                        {
+                            results.Add(documentId);
+                        }
                     }
                 }
             }
 
             return results;
+        }
+
+        private bool CheckDistance(string phrasePair, int documentId)
+        {
+            return (coordinateInvertedIndex.ContainsKey(phrasePair) && coordinateInvertedIndex[phrasePair].ContainsKey(documentId));
         }
 
         public HashSet<int> DistanceBasedSearch(string word1, string word2, int distance)
@@ -91,7 +101,7 @@ namespace ir1_khomenko
 
         private IEnumerable<string> GetPhrasePairs(List<string> terms)
         {
-            for (int i = 0; i < terms.Count; i++)
+            for (int i = 0; i < terms.Count - 1; i++)
             {
                 yield return $"{terms[i].ToLower()} {terms[i + 1].ToLower()}";
             }
