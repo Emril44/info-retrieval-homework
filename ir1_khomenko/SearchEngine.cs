@@ -50,18 +50,63 @@ namespace ir1_khomenko
 
             List<string> terms = ParseQuery(query);
 
-            foreach (var phrasePair in GetPhrasePairs(terms))
+            if (terms.Count > 2)
             {
-                if(phrasalIndex.ContainsKey(phrasePair))
-                {
-                    foreach (var tuple in phrasalIndex[phrasePair])
-                    {
-                        int documentId = tuple.Item1;
+                // More than two words
+                HashSet<int> biword1 = new();
+                HashSet<int> biword2 = new();
 
-                        if(CheckDistance(phrasePair, documentId))
+                List<string> biwords = GetBiwords(terms);
+                foreach (var biword in biwords)
+                {
+                    Console.WriteLine(biword);
+                    if (phrasalIndex.ContainsKey(biword))
+                    {
+                        foreach (var tuple in phrasalIndex[biword])
                         {
+                            int documentId = tuple.Item1;
+                            if(biword == biwords[0])
+                            {
+                                biword1.Add(documentId);
+                            }
+                            else
+                            {
+                                biword2.Add(documentId);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Biword {biword} not found");
+                    }
+                }
+
+                // Intersect both biwords
+                foreach (var documentID in biword1)
+                {
+                    if(biword2.Contains(documentID))
+                    {
+                        results.Add(documentID);
+                    }
+                }
+            }
+            else
+            {
+                // Only two words
+                foreach (var phrasePair in GetPhrasePairs(terms))
+                {
+                    if (phrasalIndex.ContainsKey(phrasePair))
+                    {
+                        foreach (var tuple in phrasalIndex[phrasePair])
+                        {
+                            int documentId = tuple.Item1;
+
                             results.Add(documentId);
                         }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Pair not found");
                     }
                 }
             }
@@ -69,12 +114,17 @@ namespace ir1_khomenko
             return results;
         }
 
-        private bool CheckDistance(string phrasePair, int documentId)
+        private List<string> GetBiwords(List<string> terms)
         {
-            return (coordinateInvertedIndex.ContainsKey(phrasePair) && coordinateInvertedIndex[phrasePair].ContainsKey(documentId));
+            List<string> biwords = new();
+            for (int i = 0; i < terms.Count - 1; i++)
+            {
+                biwords.Add($"{terms[i]} {terms[i + 1]}");
+            }
+            return biwords;
         }
 
-        public HashSet<int> DistanceBasedSearch(string word1, string word2, int distance)
+        public HashSet<int> DistanceBasedSearch(string word1, string word2)
         {
             HashSet<int> results = new();
 
@@ -87,8 +137,7 @@ namespace ir1_khomenko
                     List<int> positions = docEntry.Value;
                     for(int i = 0; i < positions.Count - 1; i++)
                     {
-                        if (positions[i + 1] - positions[i] <= distance)
-                        {
+                        if(positions[i + 1] - positions[i] == 1) {
                             results.Add(docEntry.Key);
                             break;
                         }

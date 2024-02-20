@@ -36,6 +36,7 @@ namespace ir1_khomenko
                         wordCount[cleanWord] = 1;
                         termsList.Add(cleanWord);
                         InvertedIndex[cleanWord] = new HashSet<int>();
+                        CoordinateInvertedIndex[cleanWord] = new Dictionary<int, List<int>>();
                     }
                     else
                     {
@@ -51,7 +52,6 @@ namespace ir1_khomenko
                             wordCount[wordPair] = 1;
                             termsList.Add(wordPair);
                             PhrasalIndex[wordPair] = new();
-                            CoordinateInvertedIndex[wordPair] = new();
                         }
                         else
                         {
@@ -61,16 +61,45 @@ namespace ir1_khomenko
                         int documentId = allText.IndexOf(text);
                         PhrasalIndex[wordPair].Add(new Tuple<int, int>(documentId, i));
 
-                        if (!CoordinateInvertedIndex[wordPair].ContainsKey(documentId))
+                        if (!CoordinateInvertedIndex[cleanWord].ContainsKey(documentId))
                         {
-                            CoordinateInvertedIndex[wordPair][documentId] = new List<int>();
+                            CoordinateInvertedIndex[cleanWord][documentId] = new List<int>();
                         }
-                        CoordinateInvertedIndex[wordPair][documentId].Add(i);
+                        CoordinateInvertedIndex[cleanWord][documentId].Add(i);
 
                         InvertedIndex[cleanWord].Add(documentId);
                     }
                 }
             }
+
+            //foreach(var termPair in CoordinateInvertedIndex)
+            //{
+            //    Console.WriteLine($"Term pair: {termPair.Key}");
+
+            //    foreach(var docEntry in termPair.Value)
+            //    {
+            //        int docID = docEntry.Key;
+            //        List<int> positions = docEntry.Value;
+
+            //        Console.WriteLine($"Doc ID: {docID}");
+            //        Console.WriteLine("Positions:");
+            //        Console.WriteLine(string.Join(", ", positions));
+            //    }
+            //}
+
+            //foreach(var termPair in PhrasalIndex)
+            //{
+            //    string term = termPair.Key;
+            //    Console.WriteLine($"Term pair: {term}");
+
+            //    List<Tuple<int,int>> tuples = termPair.Value;
+            //    foreach(var tuple in tuples)
+            //    {
+            //        int docID = tuple.Item1;
+            //        int pos = tuple.Item2;
+            //        Console.WriteLine($"Doc ID: {docID}, Pos: {pos}");
+            //    }
+            //}
 
                 //termIndexMap = new();
 

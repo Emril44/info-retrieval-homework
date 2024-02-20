@@ -31,20 +31,20 @@ SearchEngine searchEngine = new(
     null
     );
 
-Console.WriteLine("BOOLEAN SEARCH:");
-HashSet<int> boolResults = searchEngine.BooleanSearch("diagram AND corrugated OR philadelphia");
-PrintResults(boolResults);
-Console.WriteLine("--------------------------------\n");
+//Console.WriteLine("BOOLEAN SEARCH:");
+//HashSet<int> boolResults = searchEngine.BooleanSearch("diagram AND corrugated OR philadelphia");
+//PrintResults(boolResults);
+//Console.WriteLine("--------------------------------\n");
 
 Console.WriteLine("PHRASAL SEARCH:");
-HashSet<int> phrasalResults = searchEngine.PhraseSearch("overlook hotel");
+HashSet<int> phrasalResults = searchEngine.PhraseSearch("pennywise the clown");
 PrintResults(phrasalResults);
 Console.WriteLine("--------------------------------\n");
 
-Console.WriteLine("DISTANCE-BASED SEARCH:");
-HashSet<int> distanceResults = searchEngine.DistanceBasedSearch("quarry", "course", 7);
-PrintResults(distanceResults);
-Console.WriteLine("--------------------------------\n");
+//Console.WriteLine("DISTANCE-BASED SEARCH:");
+//HashSet<int> distanceResults = searchEngine.DistanceBasedSearch("overlook", "hotel");
+//PrintResults(distanceResults);
+//Console.WriteLine("--------------------------------\n");
 
 static void PrintResults(HashSet<int> results)
 {
