@@ -124,28 +124,61 @@ namespace ir1_khomenko
             return biwords;
         }
 
-        public HashSet<int> DistanceBasedSearch(string word1, string word2)
+        public HashSet<int> DistanceBasedSearch(string word1, string word2, int distance)
         {
             HashSet<int> results = new();
 
-            string termPair = $"{word1.ToLower()} {word2.ToLower()}";
+            // toLower both terms for case insensitivity
+            word1 = word1.ToLower();
+            word2 = word2.ToLower();
 
-            if(coordinateInvertedIndex.ContainsKey(termPair))
+            // Check if terms exist in the index
+            if(coordinateInvertedIndex.ContainsKey(word1) && coordinateInvertedIndex.ContainsKey(word2))
             {
-                foreach (var docEntry in coordinateInvertedIndex[termPair])
+                // Get posting lists from both terms
+                var postings1 = coordinateInvertedIndex[word1];
+                var postings2 = coordinateInvertedIndex[word2];
+
+                // Iterate over common docs between posting lists
+                foreach (var docEntry in postings1.Keys.Intersect(postings2.Keys))
                 {
-                    List<int> positions = docEntry.Value;
-                    for(int i = 0; i < positions.Count - 1; i++)
+                    // Get positions of both terms in the doc
+                    List<int> positions1 = postings1[docEntry];
+                    List<int> positions2 = postings2[docEntry];
+
+                    // Check if occurrence happens
+                    if(HasOccurrenceWithinDistance(positions1, positions2, distance))
                     {
-                        if(positions[i + 1] - positions[i] == 1) {
-                            results.Add(docEntry.Key);
-                            break;
-                        }
+                        results.Add(docEntry);
                     }
                 }    
             }
 
             return results;
+        }
+
+        // Check if occurrence happens within specified distance
+        private bool HasOccurrenceWithinDistance(List<int> positions1, List<int> positions2, int distance)
+        {
+            foreach(var pos1 in positions1)
+            {
+                foreach(var pos2 in positions2)
+                {
+                    if(Math.Abs(pos1 - pos2) < distance)
+                    {
+                        // Found within distance
+                        return true;
+                    }
+                    else if(pos2 > pos1 + distance)
+                    {
+                        // Positions too far apart, move to next pos of term 1
+                        break;
+                    }
+                }
+            }
+
+            // Nothing found
+            return false;
         }
 
         private IEnumerable<string> GetPhrasePairs(List<string> terms)

@@ -41,10 +41,10 @@ HashSet<int> phrasalResults = searchEngine.PhraseSearch("pennywise the clown");
 PrintResults(phrasalResults);
 Console.WriteLine("--------------------------------\n");
 
-//Console.WriteLine("DISTANCE-BASED SEARCH:");
-//HashSet<int> distanceResults = searchEngine.DistanceBasedSearch("overlook", "hotel");
-//PrintResults(distanceResults);
-//Console.WriteLine("--------------------------------\n");
+Console.WriteLine("DISTANCE-BASED SEARCH:");
+HashSet<int> distanceResults = searchEngine.DistanceBasedSearch("pennywise", "clown", 2);
+PrintResults(distanceResults);
+Console.WriteLine("--------------------------------\n");
 
 static void PrintResults(HashSet<int> results)
 {
