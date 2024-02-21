@@ -18,8 +18,6 @@ namespace ir1_khomenko
         public Dictionary<string, HashSet<int>> InvertedIndex { get; private set; }
         public Dictionary<string, List<Tuple<int, int>>> PhrasalIndex { get; private set; }
         public Dictionary<string, Dictionary<int, List<int>>> CoordinateInvertedIndex { get; private set; }
-        public bool[,] IncidenceMatrix { get; private set; }
-        private Dictionary<string, int> termIndexMap;
 
         // TODO: Phrasal index & coordinate inverted index
 		public Dictionary<string, int> BuildDictionary(List<string> allText)
@@ -107,37 +105,8 @@ namespace ir1_khomenko
             //        Console.WriteLine($"Doc ID: {docID}, Pos: {pos}");
             //    }
             //}
-
-                //termIndexMap = new();
-
-                //for(int index = 0; index < termsList.Count; index++)
-                //{
-                //    termIndexMap[termsList[index]] = index;
-                //}
-
-                //IncidenceMatrix = new bool[allText.Count, termsList.Count];
-
-                //for (int i = 0; i < allText.Count; i++)
-                //{
-                //    string text = allText[i];
-                //    string[] words = text.Split(new char[] { ' ', '\n', '\r', '\t', '.', ',', ';', ':', '—', '-', '(', ')', '[', ']', '{', '}', '<', '>', '\"', '\'', '\\', '/', '!', '?', '|', '_', '+', '=', '*', '&', '%', '$', '#', '@', '^', '~', '`', '“', '"', '”' }, StringSplitOptions.RemoveEmptyEntries);
-
-                //    foreach (string word in words)
-                //    {
-                //        string cleanWord = word.ToLower();
-                //        if(termIndexMap.TryGetValue(cleanWord, out int termIndex))
-                //        {
-                //            IncidenceMatrix[i, termIndex] = true;
-                //        }
-                //    }
-                //}
-
-                return wordCount;
+    
+            return wordCount;
 		}
-
-        public Dictionary<string, int> GetTermIndexMap()
-        {
-            return termIndexMap;
-        }
 	}
 }

@@ -25,10 +25,8 @@ dictionaryProcessor.SaveDictionaryTXT(wordCount, dictionaryFilePathTxt);
 
 SearchEngine searchEngine = new(
     dictionary.InvertedIndex,
-    null,
     dictionary.PhrasalIndex,
-    dictionary.CoordinateInvertedIndex,
-    null
+    dictionary.CoordinateInvertedIndex
     );
 
 //Console.WriteLine("BOOLEAN SEARCH:");

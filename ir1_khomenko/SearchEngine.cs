@@ -11,32 +11,22 @@ namespace ir1_khomenko
         private readonly Dictionary<string, HashSet<int>> invertedIndex;
         private readonly Dictionary<string, List<Tuple<int, int>>> phrasalIndex;
         private readonly Dictionary<string, Dictionary<int, List<int>>> coordinateInvertedIndex;
-        private readonly bool[,] incidenceMatrix;
-        private Dictionary<string, int> termIndexMap;
 
         public SearchEngine(
             Dictionary<string,HashSet<int>> invertedIndex,
-            bool[,] incidenceMatrix,
             Dictionary<string, List<Tuple<int, int>>> phrasalIndex,
-            Dictionary<string, Dictionary<int, List<int>>> coordinateInvertedIndex,
-            Dictionary<string, int> termIndexMap)
+            Dictionary<string, Dictionary<int, List<int>>> coordinateInvertedIndex)
         {
             this.invertedIndex = invertedIndex;
-            this.incidenceMatrix = incidenceMatrix;
             this.phrasalIndex = phrasalIndex;
             this.coordinateInvertedIndex = coordinateInvertedIndex;
-            this.termIndexMap = termIndexMap;
         }
 
         public HashSet<int> BooleanSearch(string query)
         {
             if(invertedIndex != null)
             {
-                return EvaluateQuery(query, true);
-            }
-            else if(incidenceMatrix != null)
-            {
-                return EvaluateQuery(query, false);
+                return EvaluateQuery(query);
             }
             else
             {
@@ -214,69 +204,13 @@ namespace ir1_khomenko
             return terms;
         }
 
-        private HashSet<int> EvaluateQuery(string query, bool useInvertedIndex)
+        private HashSet<int> EvaluateQuery(string query)
         {
             HashSet<int> results;
 
             List<string> terms = ParseQuery(query);
 
-            if (useInvertedIndex)
-            {
-                results = EvaluateInvertedIndex(terms);
-            }
-            else
-            {
-                results = EvaluateIncidenceMatrix(terms, termIndexMap);
-            }
-
-            return results;
-        }
-
-        private HashSet<int> EvaluateIncidenceMatrix(List<string> terms, Dictionary<string, int> termIndexMap)
-        {
-            HashSet<int> results = new HashSet<int>();
-            for (int i = 0; i < incidenceMatrix.GetLength(0); i++)
-            {
-                results.Add(i);
-            }
-
-            HashSet<int> tempResults = new HashSet<int>();
-
-            string logicalOperator = "OR"; // default
-            foreach(string term in terms)
-            {
-                if(term == "AND" || term == "OR" || term == "NOT")
-                {
-                    logicalOperator = term;
-                }
-                else
-                {
-                    HashSet<int> newResults = new();
-
-                    for(int docID = 0; docID < incidenceMatrix.GetLength(0); docID++)
-                    {
-                        if (incidenceMatrix[docID, termIndexMap[term]])
-                        {
-                            newResults.Add(docID);
-                        }
-                    }
-
-                    if(logicalOperator == "AND")
-                    {
-                        tempResults.IntersectWith(newResults);
-                    }
-                    else if(logicalOperator == "OR")
-                    {
-                        tempResults.UnionWith(newResults);
-                    }
-                    else if(logicalOperator == "NOT")
-                    {
-                        tempResults.ExceptWith(newResults);
-                    }
-                }
-            }
-
-            results.IntersectWith(tempResults);
+            results = EvaluateInvertedIndex(terms);
 
             return results;
         }
