@@ -38,7 +38,7 @@ namespace ir1_khomenko
         {
             var prefix = Prefix(str);
 
-            return prefix.Depth == str.Length && prefix.FindChildNode('$') != null;
+            return prefix.Depth == str.Length && prefix.Children.ContainsKey('$');
         }
 
         public void InsertRange(List<string> strings)
@@ -51,22 +51,24 @@ namespace ir1_khomenko
 
         public void Insert(string str)
         {
-            var commonPrefix = Prefix(str);
-            var current = commonPrefix;
+            Console.WriteLine($"Inserting {str}");
+            Node current = _root;
 
             for(var i = current.Depth; i < str.Length; i++)
             {
-                var newNode = new Node(str[i], current, current.Depth + 1);
-                
-                current.Children.Add(newNode);
+                Node newNode = new(str[i], current, current.Depth + 1);
+                current.Children[str[i]] = newNode;
                 current = newNode;
             }
 
-            current.Children.Add(new Node('$', current, current.Depth + 1));
+            current.Children['$'] = new Node('$', current, current.Depth + 1);
+
+            PrintTrie(_root, "");
         }
 
         public void Delete(string str)
         {
+            Console.WriteLine($"Deleting {str}");
             if(Search(str))
             {
                 var node = Prefix(str).FindChildNode('$');
@@ -79,6 +81,15 @@ namespace ir1_khomenko
                     parent.DeleteChildNode(node.Value);
                     node = parent;
                 }
+            }
+        }
+
+        public void PrintTrie(Node node, string prefix)
+        {
+            Console.WriteLine($"{prefix} - {node.Value}");
+            foreach (var child in node.Children)
+            {
+                PrintTrie(child.Value, prefix + node.Value);
             }
         }
     }
