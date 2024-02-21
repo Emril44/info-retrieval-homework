@@ -9,7 +9,9 @@ List<string> files = fileReader.ReadTextFiles();
 
 // Creating the dictionary
 DictionaryBuilder dictionary = new();
-Trie wordCount = dictionary.BuildTrie(files);
+Trie trie = dictionary.BuildTrie(files);
+Dictionary<string, List<int>> wordCount = dictionary.BuildTrigramIndex(files);
+Dictionary<string, List<string>> perms = dictionary.BuildPermutationIndex(files);
 
 // Saving to files
 string dictionaryFilePathJson = Path.Combine(baseDir, "dictionary.json");
