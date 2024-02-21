@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 
 namespace ir1_khomenko
 {
+    /*
+     TODO:
+     1. Побудувати пряме або обернене дерево термінів словника
+     2. Побудувати перестановочний індекс для словника
+     3. Побудувати 3-грамний індекс для словника
+     */
+
     class DictionaryBuilder
     {
         public Dictionary<string, HashSet<int>> InvertedIndex { get; private set; }
