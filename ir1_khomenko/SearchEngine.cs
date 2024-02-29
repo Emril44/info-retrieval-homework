@@ -12,14 +12,69 @@ namespace ir1_khomenko
         private readonly Dictionary<string, List<Tuple<int, int>>> phrasalIndex;
         private readonly Dictionary<string, Dictionary<int, List<int>>> coordinateInvertedIndex;
 
+        private Trie trie;
+        private Dictionary<string, List<int>> trigramIndex;
+        private Dictionary<string, HashSet<int>> permutationIndex;
+
         public SearchEngine(
             Dictionary<string,HashSet<int>> invertedIndex,
             Dictionary<string, List<Tuple<int, int>>> phrasalIndex,
-            Dictionary<string, Dictionary<int, List<int>>> coordinateInvertedIndex)
+            Dictionary<string, Dictionary<int, List<int>>> coordinateInvertedIndex,
+            Trie trie,
+            Dictionary<string, List<int>> trigramIndex,
+            Dictionary<string, HashSet<int>> permutationIndex)
         {
             this.invertedIndex = invertedIndex;
             this.phrasalIndex = phrasalIndex;
             this.coordinateInvertedIndex = coordinateInvertedIndex;
+            this.trie = trie;
+            this.trigramIndex = trigramIndex;
+            this.permutationIndex = permutationIndex;
+        }
+
+        public HashSet<int> Search(string query)
+        {
+            HashSet<int> results = new HashSet<int>();
+
+            List<string> terms = ParseQuery(query);
+
+            // check if boolean
+            if(ContainsBooleanOperators(query))
+            {
+                Console.WriteLine("Boolean");
+                results = BooleanSearch(query);
+            }
+            // check if distance-based
+            else if (terms.Count == 3 && int.TryParse(terms[2], out _))
+            {
+                Console.WriteLine("Distance-based");
+                (string word1, string word2, int distance) = ExtractDistanceQueryDetails(query);
+                results = DistanceBasedSearch(word1, word2, distance);
+            }
+            // check if phrasal
+            else if (terms.Count > 2)
+            {
+                Console.WriteLine("Phrasal");
+                results = PhraseSearch(query);
+            }
+            // check if wildcard
+            else if (ContainsWildcard(query))
+            {
+                Console.WriteLine("Wildcard");
+                results = JokerSearch(query);
+            }
+            else
+            {
+                // regular single-word search
+                Console.WriteLine("Default");
+                foreach (string term in terms)
+                {
+                    HashSet<int> termResults = Search(term);
+                    results.UnionWith(termResults);
+                }
+            }
+
+            return results;
         }
 
         public HashSet<int> BooleanSearch(string query)
@@ -104,16 +159,6 @@ namespace ir1_khomenko
             return results;
         }
 
-        private List<string> GetBiwords(List<string> terms)
-        {
-            List<string> biwords = new();
-            for (int i = 0; i < terms.Count - 1; i++)
-            {
-                biwords.Add($"{terms[i]} {terms[i + 1]}");
-            }
-            return biwords;
-        }
-
         public HashSet<int> DistanceBasedSearch(string word1, string word2, int distance)
         {
             HashSet<int> results = new();
@@ -145,6 +190,138 @@ namespace ir1_khomenko
             }
 
             return results;
+        }
+
+        public HashSet<int> JokerSearch(string query)
+        {
+            HashSet<int> results = new HashSet<int>();
+
+            List<string> terms = ParseQuery(query);
+
+            foreach (var term in terms)
+            {
+                //HashSet<int> trieResults = SearchTrie(term);
+                //results.UnionWith(trieResults);
+
+                //HashSet<int> trigramResults = SearchTrigram(term);
+                //results.UnionWith(trigramResults);
+
+                HashSet<int> permutationResults = SearchPermutation(term);
+                results.UnionWith(permutationResults);
+            }
+
+            return results;
+        }
+
+        //private HashSet<int> SearchTrie(string term)
+        //{
+        //    HashSet<int> results = new();
+
+        //    SearchTrieRecursive(trie.Root, term, 0, new StringBuilder(), results);
+
+        //    return results;
+        //}
+
+        //private void SearchTrieRecursive(Node node, string term, int index, StringBuilder currentWord, HashSet<int> results)
+        //{
+        //    if(index == term.Length)
+        //    {
+        //        if(node.IsEndOfWord)
+        //        {
+        //            results.UnionWith(node.DocumentIDs);
+        //        }
+        //        return;
+        //    }
+
+
+        //}
+
+        private HashSet<int> SearchTrigram(string term)
+        {
+            HashSet<int> results = new();
+
+            // generate trigrams of given search term
+            List<string> trigrams = GenerateTrigrams(term);
+
+            foreach (string trigram in trigrams)
+            {
+                if(trigramIndex.ContainsKey(trigram))
+                {
+                    results.UnionWith(trigramIndex[trigram]);
+                }
+            }
+
+            return results;
+        }
+
+        private List<string> GenerateTrigrams(string term)
+        {
+            List<string> trigrams = new List<string>();
+
+            for(int i = 0; i < term.Length - 2; i++)
+            {
+                string trigram = term.Substring(i, 3);
+                trigrams.Add(trigram);
+            }
+
+            return trigrams;
+        }
+
+        private HashSet<int> SearchPermutation(string term)
+        {
+            HashSet<int> results = new();
+
+            // generate permutations of given term
+            List<string> permutations = PermutationGenerator.GeneratePermutations(term);
+
+            foreach(string permutation in permutations)
+            {
+                if(permutationIndex.ContainsKey(permutation))
+                {
+                    foreach (int id in permutationIndex[permutation])
+                    {
+                        Console.WriteLine($"ID: {id}");
+                        results.Add(id);
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        private bool ContainsBooleanOperators(string query)
+        {
+            return query.Contains("AND") || query.Contains("OR") || query.Contains("NOT");
+        }
+
+        private (string word1, string word2, int distance) ExtractDistanceQueryDetails(string query)
+        {
+            string[] tokens = query.Split(' ');
+
+            string word1 = tokens[0];
+            string word2 = tokens[1];
+
+            int distance = 0;
+            foreach (var token in tokens)
+            {
+                if (int.TryParse(token, out distance))
+                {
+                    // int found, stopping
+                    break;
+                }
+            }
+
+            return (word1, word2, distance);
+        }
+
+        private List<string> GetBiwords(List<string> terms)
+        {
+            List<string> biwords = new();
+            for (int i = 0; i < terms.Count - 1; i++)
+            {
+                biwords.Add($"{terms[i]} {terms[i + 1]}");
+            }
+            return biwords;
         }
 
         // Check if occurrence happens within specified distance
@@ -191,6 +368,7 @@ namespace ir1_khomenko
 
                 if (token == "AND" || token == "OR" || token == "NOT")
                 {
+                    // bool tokens unaltered to work with code
                     term = token.Trim();
                 }
                 else
@@ -202,6 +380,12 @@ namespace ir1_khomenko
             }
 
             return terms;
+        }
+
+        // helper method to check for wildcard chars
+        private bool ContainsWildcard(string token)
+        {
+            return token.Contains('*') || token.Contains('?');
         }
 
         private HashSet<int> EvaluateQuery(string query)

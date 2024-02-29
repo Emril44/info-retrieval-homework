@@ -12,6 +12,7 @@ namespace ir1_khomenko
         public Dictionary<char, Node> Children { get; set; }
         public Node Parent { get; set; }
         public int Depth { get; set; }
+        public bool IsEndOfWord { get; set; }
 
         public Node(char value, Node parent, int depth)
         {
@@ -19,6 +20,7 @@ namespace ir1_khomenko
             Children = new();
             Parent = parent;
             Depth = depth;
+            IsEndOfWord = false;
         }
 
         public bool IsLeaf()
@@ -38,5 +40,7 @@ namespace ir1_khomenko
             if (Children.ContainsKey(c))
                 Children.Remove(c);
         }
+
+
     }
 }

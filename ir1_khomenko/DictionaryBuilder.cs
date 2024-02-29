@@ -9,8 +9,6 @@ namespace ir1_khomenko
 {
     /*
      TODO:
-     2. Побудувати перестановочний індекс для словника
-     3. Побудувати 3-грамний індекс для словника
      4. Реалізувати підтримку запитів з джокерами
      */
 
@@ -40,65 +38,35 @@ namespace ir1_khomenko
             return _trie;
 		}
 
-        public Dictionary<string, List<string>> BuildPermutationIndex(List<string> allText)
+        public Dictionary<string, HashSet<int>> BuildPermutationIndex(List<string> allText)
         {
-            Dictionary<string, List<string>> permutationIndex = new Dictionary<string, List<string>>();
+            int documentID = 0;
 
-            foreach(string text in allText)
+            Dictionary<string, HashSet<int>> permutationIndex = new Dictionary<string, HashSet<int>>();
+
+            foreach (string text in allText)
             {
                 string[] words = text.Split(new char[] { ' ', '\n', '\r', '\t', '.', ',', ';', ':', '—', '-', '(', ')', '[', ']', '{', '}', '<', '>', '\"', '\'', '\\', '/', '!', '?', '|', '_', '+', '=', '*', '&', '%', '$', '#', '@', '^', '~', '`', '“', '"', '”' }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach(string word in words)
                 {
-                    List<string> permutations = GeneratePermutations(word.ToLower());
+                    List<string> permutations = PermutationGenerator.GeneratePermutations(word.ToLower());
 
                     foreach(string permutation in permutations)
                     {
                         if(!permutationIndex.ContainsKey(permutation))
                         {
-                            permutationIndex[permutation] = new List<string>();
+                            permutationIndex[permutation] = new HashSet<int>();
                         }
-                        permutationIndex[permutation].Add(word);
+                        permutationIndex[permutation].Add(documentID);
                     }
+
+                    documentID++;
                 }
             }
 
             return permutationIndex;
         }
-
-        private List<string> GeneratePermutations(string word)
-        {
-            List<string> permutations = new List<string>();
-            PermutationGenerator(word.ToCharArray(), 0, permutations);
-            return permutations;
-        }
-
-        private void PermutationGenerator(char[] wordArray, int currentIndex,  List<string> permutations)
-        {
-            if(currentIndex == wordArray.Length - 1)
-            {
-                permutations.Add(new string(wordArray));
-                Console.WriteLine($"Added permutation: {new string(wordArray)}");
-                return;
-            }
-
-            for(int i = currentIndex; i < wordArray.Length; i++)
-            {
-                Swap(ref wordArray[currentIndex], ref wordArray[i]);
-                Console.WriteLine($"Swapped characters at indices {currentIndex} and {i}");
-                PermutationGenerator(wordArray, currentIndex + 1, permutations);
-                Swap(ref wordArray[currentIndex], ref wordArray[i]);
-                Console.WriteLine($"Reversed swap of characters at indices {currentIndex} and {i}");
-            }
-        }
-
-        private void Swap(ref char a, ref char b)
-        {
-            char temp = a;
-            a = b;
-            b = temp;
-        }
-
         public Dictionary<string, List<int>> BuildTrigramIndex(List<string> allText)
         {
             Dictionary<string, List<int>> trigramIndex = new Dictionary<string, List<int>>();
@@ -124,14 +92,6 @@ namespace ir1_khomenko
                     }
                 }
             }
-
-            //foreach(var kvp in trigramIndex)
-            //{
-            //    string trigram = kvp.Key;
-            //    List<int> documentIDs = kvp.Value;
-
-            //    Console.WriteLine($"Trigram: {trigram}, Doc IDs: {string.Join(", ", documentIDs)}");
-            //}
 
             return trigramIndex;
         }

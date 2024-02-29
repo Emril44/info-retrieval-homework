@@ -9,17 +9,20 @@ List<string> files = fileReader.ReadTextFiles();
 
 // Creating the dictionary
 DictionaryBuilder dictionary = new();
-Trie trie = dictionary.BuildTrie(files);
-Dictionary<string, List<int>> wordCount = dictionary.BuildTrigramIndex(files);
-Dictionary<string, List<string>> perms = dictionary.BuildPermutationIndex(files);
+//Trie trie = dictionary.BuildTrie(files);
+//Dictionary<string, List<int>> trigrams = dictionary.BuildTrigramIndex(files);
+Dictionary<string, HashSet<int>> perms = dictionary.BuildPermutationIndex(files);
 
 // Saving to files
 string dictionaryFilePathJson = Path.Combine(baseDir, "dictionary.json");
 string dictionaryFilePathTxt = Path.Combine(baseDir, "dictionary.txt");
 
 DictionaryProcessor dictionaryProcessor = new DictionaryProcessor();
+string testQuery = "h*t";
+SearchEngine searchEngine = new SearchEngine(null, null, null, null, null, perms);
 
-
+HashSet<int> results = searchEngine.Search(testQuery);
+PrintResults(results);
 
 static void PrintResults(HashSet<int> results)
 {

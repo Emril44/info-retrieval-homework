@@ -10,6 +10,8 @@ namespace ir1_khomenko
     {
         private readonly Node _root;
 
+        public Node Root => _root;
+
         public Trie()
         {
             _root = new Node('^', null, 0);
@@ -51,7 +53,6 @@ namespace ir1_khomenko
 
         public void Insert(string str)
         {
-            Console.WriteLine($"Inserting {str}");
             Node current = _root;
 
             for(var i = current.Depth; i < str.Length; i++)
@@ -62,13 +63,11 @@ namespace ir1_khomenko
             }
 
             current.Children['$'] = new Node('$', current, current.Depth + 1);
-
-            PrintTrie(_root, "");
+            current.Children['$'].IsEndOfWord = true;
         }
 
         public void Delete(string str)
         {
-            Console.WriteLine($"Deleting {str}");
             if(Search(str))
             {
                 var node = Prefix(str).FindChildNode('$');
