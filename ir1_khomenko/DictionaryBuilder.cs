@@ -8,6 +8,8 @@ namespace ir1_khomenko
 {
     class DictionaryBuilder
     {
+        // Implement SPIMI
+
         public Dictionary<string, HashSet<int>> InvertedIndex { get; private set; }
         public Dictionary<string, List<Tuple<int, int>>> PhrasalIndex { get; private set; }
         public Dictionary<string, Dictionary<int, List<int>>> CoordinateInvertedIndex { get; private set; }
