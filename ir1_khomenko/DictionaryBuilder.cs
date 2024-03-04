@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ir1_khomenko
@@ -14,8 +15,8 @@ namespace ir1_khomenko
 
     class DictionaryBuilder
     {
+        public Dictionary<string, HashSet<int>> InvertedIndex { get; private set; }
         private Trie _trie;
-
         public Dictionary<string, List<string>> PermutationIndex { get; private set; }
         public Dictionary<string, List<int>> TrigramIndex { get; private set; }
      
@@ -38,11 +39,48 @@ namespace ir1_khomenko
             return _trie;
 		}
 
+        public Dictionary<string, int> BuildDictionary(List<string> allText)
+        {
+            Dictionary<string, int> wordCount = new Dictionary<string, int>();
+            InvertedIndex = new Dictionary<string, HashSet<int>>();
+            List<string> termsList = new List<string>();
+
+            string pattern = @"\b\w+\b";
+            Regex regex = new Regex(pattern, RegexOptions.Compiled);
+
+            for (int documentID = 0; documentID < allText.Count; documentID++)
+            {
+                string text = allText[documentID];
+
+                MatchCollection matches = regex.Matches(text);
+
+                foreach (Match match in matches)
+                {
+                    string cleanWord = match.Value.ToLower();
+
+                    if (!wordCount.ContainsKey(cleanWord))
+                    {
+                        wordCount[cleanWord] = 1;
+                        termsList.Add(cleanWord);
+                        InvertedIndex[cleanWord] = new HashSet<int>();
+                    }
+                    else
+                    {
+                        wordCount[cleanWord]++;
+                    }
+
+                    InvertedIndex[cleanWord].Add(documentID);
+                }
+            }
+
+            return wordCount;
+        }
+
         public Dictionary<string, HashSet<int>> BuildPermutationIndex(List<string> allText)
         {
             int documentID = 0;
 
-            Dictionary<string, HashSet<int>> permutationIndex = new Dictionary<string, HashSet<int>>();
+            Dictionary<string, HashSet<int>> PermutationIndex = new Dictionary<string, HashSet<int>>();
 
             foreach (string text in allText)
             {
@@ -54,18 +92,18 @@ namespace ir1_khomenko
 
                     foreach(string permutation in permutations)
                     {
-                        if(!permutationIndex.ContainsKey(permutation))
+                        if(!PermutationIndex.ContainsKey(permutation))
                         {
-                            permutationIndex[permutation] = new HashSet<int>();
+                            PermutationIndex[permutation] = new HashSet<int>();
                         }
-                        permutationIndex[permutation].Add(documentID);
+                        PermutationIndex[permutation].Add(documentID);
                     }
 
                     documentID++;
                 }
             }
 
-            return permutationIndex;
+            return PermutationIndex;
         }
         public Dictionary<string, List<int>> BuildTrigramIndex(List<string> allText)
         {
