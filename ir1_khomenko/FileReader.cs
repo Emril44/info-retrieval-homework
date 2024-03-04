@@ -18,31 +18,45 @@ namespace ir1_khomenko
         public List<string> ReadTextFiles()
         {
             List<string> fileContents = new List<string>();
-            try
-            {
-                string directoryPath = Path.Combine(baseDirectory, "novels");
 
-                if(Directory.Exists(directoryPath))
-                {
-                    string[] entries = Directory.GetFiles(directoryPath, "*.txt");
-
-                    foreach (string entry in entries)
-                    {
-                        string fileContent = File.ReadAllText(entry);
-                        fileContents.Add(fileContent);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Directory not found: " + directoryPath);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Failed to read file!\n{e}");
-            }
+            ProcessDirectory(baseDirectory, fileContents);
 
             return fileContents;
+        }
+
+        private void ProcessDirectory(string targetDirectory, List<string> fileContents)
+        {
+            try
+            {
+                string[] fileEntries = Directory.GetFiles(baseDirectory, "*.txt");
+                foreach (string fileName in fileEntries)
+                {
+                    string content = ProcessFile(fileName);
+                    fileContents.Add(content);
+                }
+
+                string[] subdirectoryEntries = Directory.GetDirectories(targetDirectory);
+                foreach(string subdirectoryEntry in subdirectoryEntries)
+                {
+                    ProcessDirectory(subdirectoryEntry, fileContents);
+                }
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing directory: {ex.Message}");
+            }
+        }
+
+        private string ProcessFile(string fileName)
+        {
+            try
+            {
+                string fileContent = File.ReadAllText(fileName);
+                return fileContent;
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing file: {ex.Message}");
+                return string.Empty;
+            }
         }
     }
 }

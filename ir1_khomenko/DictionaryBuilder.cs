@@ -12,16 +12,94 @@ namespace ir1_khomenko
      TODO:
      Implement SPIMI
      */
-
     class DictionaryBuilder
     {
-        public Dictionary<string, HashSet<int>> InvertedIndex { get; private set; }
         private Trie _trie;
         public Dictionary<string, List<string>> PermutationIndex { get; private set; }
         public Dictionary<string, List<int>> TrigramIndex { get; private set; }
-     
+        private DictionaryProcessor dictionaryProcessor;
+        public Dictionary<string, List<int>> InvertedIndex { get; private set; }
+        private Dictionary<string, List<int>> CurrentBlock;
+        private const long MaxBlockSize = 17179869184; // 16 GB in bytes
+
+        public DictionaryBuilder()
+        {
+            _trie = new Trie();
+            PermutationIndex = new Dictionary<string, List<string>>();
+            TrigramIndex = new Dictionary<string, List<int>>();
+
+            dictionaryProcessor = new DictionaryProcessor();
+            CurrentBlock = new Dictionary<string, List<int>>();
+            InvertedIndex = new Dictionary<string, List<int>>();
+        }
+
+        public void BuildInvertedIndex(string[] fileNames, string outputPath)
+        {
+            long currentBlockSize = 0;
+
+            string pattern = @"\b\w+\b";
+            Regex regex = new Regex(pattern, RegexOptions.Compiled);
+
+            for (int documentID = 0; documentID < fileNames.Length; documentID++)
+            {
+                string text = fileNames[documentID];
+
+                MatchCollection matches = regex.Matches(text);
+
+                foreach (Match match in matches)
+                {
+                    string cleanWord = match.Value.ToLower();
+
+                    if (!CurrentBlock.ContainsKey(cleanWord))
+                    {
+                        CurrentBlock[cleanWord] = new List<int> { documentID };
+                    }
+                    else
+                    {
+                        CurrentBlock[cleanWord].Add(documentID);
+                    }
+
+                    if (!InvertedIndex.ContainsKey(cleanWord))
+                    {
+                        InvertedIndex[cleanWord] = new List<int> { documentID };
+                    }
+                    else
+                    {
+                        InvertedIndex[cleanWord].Add(documentID);
+                    }
+
+                    int wordSize = cleanWord.Length;
+                    int postingsListSize = sizeof(int) * InvertedIndex[cleanWord].Count;
+                    int totalSize = wordSize + postingsListSize;
+                    currentBlockSize += totalSize;
+
+                    if (currentBlockSize > MaxBlockSize)
+                    {
+                        string blockFilePathJson = Path.Combine(outputPath, $"block_{DateTime.Now.Ticks}.json");
+                        dictionaryProcessor.SaveDictionaryJSON(CurrentBlock, blockFilePathJson);
+
+                        CurrentBlock.Clear();
+                        currentBlockSize = 0;
+                    }
+                }
+            }
+
+            if(CurrentBlock.Count > 0)
+            {
+                string blockFilePathJson = Path.Combine(outputPath, $"block_{DateTime.Now.Ticks}.json");
+                dictionaryProcessor.SaveDictionaryJSON(CurrentBlock, blockFilePathJson);
+
+                CurrentBlock.Clear();
+            }
+
+            string finalBlockFilePathJson = Path.Combine(outputPath, $"final_block_{DateTime.Now.Ticks}.json");
+            dictionaryProcessor.SaveDictionaryJSON(InvertedIndex, finalBlockFilePathJson);
+
+            InvertedIndex.Clear();
+        }
+
         public Trie BuildTrie(List<string> allText)
-		{
+        {
             _trie = new Trie();
 
             foreach (string text in allText)
@@ -35,47 +113,9 @@ namespace ir1_khomenko
                     _trie.Insert(cleanWord);
                 }
             }
-    
+
             return _trie;
-		}
-
-        public Dictionary<string, int> BuildDictionary(List<string> allText)
-        {
-            Dictionary<string, int> wordCount = new Dictionary<string, int>();
-            InvertedIndex = new Dictionary<string, HashSet<int>>();
-            List<string> termsList = new List<string>();
-
-            string pattern = @"\b\w+\b";
-            Regex regex = new Regex(pattern, RegexOptions.Compiled);
-
-            for (int documentID = 0; documentID < allText.Count; documentID++)
-            {
-                string text = allText[documentID];
-
-                MatchCollection matches = regex.Matches(text);
-
-                foreach (Match match in matches)
-                {
-                    string cleanWord = match.Value.ToLower();
-
-                    if (!wordCount.ContainsKey(cleanWord))
-                    {
-                        wordCount[cleanWord] = 1;
-                        termsList.Add(cleanWord);
-                        InvertedIndex[cleanWord] = new HashSet<int>();
-                    }
-                    else
-                    {
-                        wordCount[cleanWord]++;
-                    }
-
-                    InvertedIndex[cleanWord].Add(documentID);
-                }
-            }
-
-            return wordCount;
         }
-
         public Dictionary<string, HashSet<int>> BuildPermutationIndex(List<string> allText)
         {
             int documentID = 0;

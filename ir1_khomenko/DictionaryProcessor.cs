@@ -9,7 +9,7 @@ namespace ir1_khomenko
 {
     class DictionaryProcessor
     {
-        public void SaveDictionaryJSON(Dictionary<string, int> wordCount, string filePath)
+        public void SaveDictionaryJSON(Dictionary<string, List<int>> wordCount, string filePath)
         {
             try
             {
