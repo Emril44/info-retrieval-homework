@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
@@ -35,6 +36,8 @@ namespace ir1_khomenko
 
         public void BuildInvertedIndex(string[] fileNames, string outputPath)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             long currentBlockSize = 0;
 
             string pattern = @"\b\w+\b";
@@ -52,18 +55,20 @@ namespace ir1_khomenko
 
                     if (!CurrentBlock.ContainsKey(cleanWord))
                     {
-                        CurrentBlock[cleanWord] = new List<int> { documentID };
+                        CurrentBlock[cleanWord] = new List<int>();
                     }
-                    else
+
+                    if (!CurrentBlock[cleanWord].Contains(documentID))
                     {
                         CurrentBlock[cleanWord].Add(documentID);
                     }
 
                     if (!InvertedIndex.ContainsKey(cleanWord))
                     {
-                        InvertedIndex[cleanWord] = new List<int> { documentID };
+                        InvertedIndex[cleanWord] = new List<int>();
                     }
-                    else
+
+                    if (!InvertedIndex[cleanWord].Contains(documentID))
                     {
                         InvertedIndex[cleanWord].Add(documentID);
                     }
@@ -95,7 +100,16 @@ namespace ir1_khomenko
             string finalBlockFilePathJson = Path.Combine(outputPath, $"final_block_{DateTime.Now.Ticks}.json");
             dictionaryProcessor.SaveDictionaryJSON(InvertedIndex, finalBlockFilePathJson);
 
+            stopwatch.Stop();
+            TimeSpan elapsedTime = stopwatch.Elapsed;
+
+            Console.WriteLine($"Indexing completed in {elapsedTime.TotalSeconds} seconds.");
+            Console.WriteLine($"Dictionary size: {dictionaryProcessor.CalculateDictionarySize(InvertedIndex)} KB");
+            Console.WriteLine($"Number of files indexed: {dictionaryProcessor.CalculateFileNum(fileNames.ToList())}");
+            Console.WriteLine($"Space usage: {dictionaryProcessor.CalculateSpaceUsage(fileNames.ToList())} KB");
+
             InvertedIndex.Clear();
+
         }
 
         public Trie BuildTrie(List<string> allText)

@@ -83,16 +83,21 @@ namespace ir1_khomenko
             }
         }
 
-        public long CalculateDictionarySize(Dictionary<string, int> wordCount)
+        public int CalculateTotalWordCount(Dictionary<string, List<int>> wordCount)
         {
-            long size = wordCount.Sum(pair => pair.Key.Length * sizeof(char) + sizeof(int));
-            return (size / 1024);
+            int totalWordCount = wordCount.Sum(pair => pair.Value.Count);
+            return totalWordCount;
         }
 
-        public int CalculateTotalWordCount(Dictionary<string, int> wordCount)
+        public long CalculateDictionarySize(Dictionary<string, List<int>> wordCount)
         {
-            int totalWordCount = wordCount.Values.Sum();
-            return totalWordCount;
+            long size = 0;
+            foreach (var pair in wordCount)
+            {
+                size += pair.Key.Length * sizeof(char) * pair.Value.Count + sizeof(int) * pair.Value.Count;
+            }
+
+            return size / 1024; // Convert to KB
         }
 
         public int CalculateFileNum(List<string> allText)

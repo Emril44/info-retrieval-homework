@@ -15,30 +15,28 @@ namespace ir1_khomenko
             this.baseDirectory = baseDirectory;
         }
 
-        public List<string> ReadTextFiles()
+        public async Task<List<string>> ReadTextFilesAsync()
         {
             List<string> fileContents = new List<string>();
 
-            ProcessDirectory(baseDirectory, fileContents);
+            await ProcessDirectoryAsync(baseDirectory, fileContents);
 
             return fileContents;
         }
 
-        private void ProcessDirectory(string targetDirectory, List<string> fileContents)
+        private async Task ProcessDirectoryAsync(string targetDirectory, List<string> fileContents)
         {
             try
             {
-                string[] fileEntries = Directory.GetFiles(baseDirectory, "*.txt");
-                foreach (string fileName in fileEntries)
+                foreach (string fileName in Directory.EnumerateFiles(targetDirectory, "*.txt"))
                 {
-                    string content = ProcessFile(fileName);
+                    string content = await ProcessFileAsync(fileName);
                     fileContents.Add(content);
                 }
 
-                string[] subdirectoryEntries = Directory.GetDirectories(targetDirectory);
-                foreach(string subdirectoryEntry in subdirectoryEntries)
+                foreach(string subdirectoryEntry in Directory.EnumerateDirectories(targetDirectory))
                 {
-                    ProcessDirectory(subdirectoryEntry, fileContents);
+                    await ProcessDirectoryAsync(subdirectoryEntry, fileContents);
                 }
             } catch (Exception ex)
             {
@@ -46,13 +44,14 @@ namespace ir1_khomenko
             }
         }
 
-        private string ProcessFile(string fileName)
+        private async Task<string> ProcessFileAsync(string fileName)
         {
             try
             {
-                string fileContent = File.ReadAllText(fileName);
+                string fileContent = await File.ReadAllTextAsync(fileName);
                 return fileContent;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error processing file: {ex.Message}");
                 return string.Empty;
