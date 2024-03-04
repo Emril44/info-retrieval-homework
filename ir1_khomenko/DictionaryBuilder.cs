@@ -9,7 +9,7 @@ namespace ir1_khomenko
 {
     /*
      TODO:
-     4. Реалізувати підтримку запитів з джокерами
+     Implement SPIMI
      */
 
     class DictionaryBuilder
