@@ -11,7 +11,7 @@ namespace ir1_khomenko
 {
     /*
      TODO:
-     Implement SPIMI
+     Implement index compression
      */
     class DictionaryBuilder
     {
